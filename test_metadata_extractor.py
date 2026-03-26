@@ -21,11 +21,12 @@ class MetadataExtractorTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             image_path = Path(temp_dir) / "sample.jpg"
             create_test_image(image_path)
+            details_seen = []
 
             class FakeExifModule:
                 @staticmethod
                 def process_file(_file_obj, details=False):
-                    self.assertFalse(details)
+                    details_seen.append(details)
                     return {"Image Make": "TestCam", "EXIF ISOSpeedRatings": "100"}
 
             with patch.object(
@@ -35,6 +36,7 @@ class MetadataExtractorTests(unittest.TestCase):
             ):
                 result = metadata_extractor.extract_metadata(str(image_path))
 
+            self.assertEqual(details_seen, [False])
             self.assertEqual(result["image_properties"]["format"], "JPEG")
             self.assertEqual(result["image_properties"]["size"], [10, 10])
             self.assertEqual(result["exif"]["Image Make"], "TestCam")
@@ -48,10 +50,12 @@ class MetadataExtractorTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             image_path = Path(temp_dir) / "sample.jpg"
             create_test_image(image_path)
+            details_seen = []
 
             class FakeExifModule:
                 @staticmethod
                 def process_file(_file_obj, details=False):
+                    details_seen.append(details)
                     return {"Image Model": "ModelX"}
 
             with patch.object(
@@ -68,6 +72,7 @@ class MetadataExtractorTests(unittest.TestCase):
 
             output = buffer.getvalue()
             self.assertEqual(exit_code, 0)
+            self.assertEqual(details_seen, [False])
             parsed = json.loads(output)
             self.assertEqual(parsed["exif"]["Image Model"], "ModelX")
 

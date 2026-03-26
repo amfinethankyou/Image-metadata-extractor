@@ -31,11 +31,15 @@ def load_dependencies():
 
 
 def human_file_size(size_bytes):
-    if size_bytes < 1024:
-        return f"{size_bytes} B"
-    if size_bytes < 1024 * 1024:
-        return f"{size_bytes / 1024:.2f} KB"
-    return f"{size_bytes / (1024 * 1024):.2f} MB"
+    units = ["B", "KiB", "MiB", "GiB", "TiB"]
+    size = float(size_bytes)
+    unit_index = 0
+    while size >= 1024 and unit_index < len(units) - 1:
+        size /= 1024
+        unit_index += 1
+    if unit_index == 0:
+        return f"{int(size)} {units[unit_index]}"
+    return f"{size:.2f} {units[unit_index]}"
 
 
 def extract_metadata(image_path, include_all_exif=False):
@@ -107,7 +111,11 @@ def print_metadata(metadata):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Extract metadata from image files.")
-    parser.add_argument("image_path", nargs="?", help="Path to the image file.")
+    parser.add_argument(
+        "image_path",
+        nargs="?",
+        help="Path to the image file (optional; prompts if not provided).",
+    )
     parser.add_argument(
         "--json",
         action="store_true",
