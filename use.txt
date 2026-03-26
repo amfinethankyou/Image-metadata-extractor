@@ -1,0 +1,3 @@
+python metadata_extractor.py
+python metadata_extractor.py C:\path\to\image.jpg
+python metadata_extractor.py C:\path\to\images --recursive --json --output metadata.json
